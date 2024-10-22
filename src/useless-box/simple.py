@@ -1,5 +1,6 @@
 from time import sleep
-from servo import SwitchArm, LidArm
+from arm_lid import LidArm
+from arm_switch import SwitchArm
 from proximity import ProximitySensor
 from switch import ToggleSwitch
 
@@ -14,31 +15,37 @@ proximity_sensor = ProximitySensor(sda_pin=6, scl_pin=7)
 
 # State variables
 last_switch = None
-lid_open = False
 count = -1
 
-switch_arm.retract(100, 0)
-lid_arm.close(100, 0)
+# lid_arm.open()
+# sleep(1)
+# switch_arm.extend(50, duration = 2000)
+# switch_arm.extend(duration = 100)
+# sleep(1)
+#
+# switch_arm.retract(100, duration = 1000)
+# lid_arm.close()
 
-while False:
+while True:
     current_switch = toggle_switch.is_on()
     prox = proximity_sensor.read_proximity()
+
+#     print(f"Switch: {current_switch}, Proximity: {prox}")
 
     if current_switch and not last_switch:
         count = 20  # wait for count cycles
 
-    if lid_open:
+    if lid_arm.is_open():
         if prox < 100 and count < 0:
-            lid_arm.close(0, 500)  # Close the lid completely over 500ms
-            lid_open = False
-        elif current_switch and lid_open and count <= 0:
-            switch_arm.switch_off(pre_wait=100)
-            lid_arm.close(0, 500)  # Close the lid completely over 500ms
-            lid_open = False
+            lid_arm.close()
+        elif current_switch and count <= 0:
+            switch_arm.extend()
+            sleep(2)
+            switch_arm.retract(100)
+            lid_arm.close()
     else:
         if prox > 100 or count == 0:
-            lid_arm.open(100, 500)  # Open the lid fully over 500ms
-            lid_open = True
+            lid_arm.open()
 
     count -= 1
     last_switch = current_switch

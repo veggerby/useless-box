@@ -1,6 +1,7 @@
 import random
 import time
-from servo import SwitchArm, LidArm
+from arm_lid import LidArm
+from arm_switch import SwitchArm
 from proximity import ProximitySensor
 from switch import ToggleSwitch  # Import the new ToggleSwitch class
 

@@ -13,4 +13,4 @@ class ToggleSwitch:
         Checks if the toggle switch is in the "On" state.
         :return: True if the switch is "On", False otherwise.
         """
-        return self.pin.value() > 0.5
+        return self.pin.value() < 0.5

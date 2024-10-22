@@ -31,7 +31,7 @@ class UselessBoxController:
         self.box = UselessBox(switch_pin, lid_pin, sda_pin, scl_pin, toggle_pin)
         self.led = LED(led_pin)  # Initialize the onboard LED
         self.state = UselessBoxController.IDLE
-        self.last_proximity = ProximityState.NO_DETECTION
+        self.last_proximity = None
         self.last_switch_state = None
         self.inactivity_timeout = inactivity_timeout  # Inactivity timeout in seconds
         self.last_interaction_time = time.time()  # Track the last time an interaction occurred
@@ -50,14 +50,19 @@ class UselessBoxController:
         current_switch = self.box.get_switch_state()
         proximity = self.box.get_proximity()
 
-        # Output the actual proximity state for feedback
+        # Output proximity state only if it has changed
         if proximity != self.last_proximity:
             print(f"Proximity state: {proximity}")
+
+        # Output switch state only if it has changed
+        if current_switch != self.last_switch_state:
+            print(f"Switch state: {'On' if current_switch else 'Off'}")
 
         # Check for interactions and update the state
         if current_switch and not self.last_switch_state:
             self.state = UselessBoxController.SWITCH_OFF
             self.led.on()  # Turn on the LED when the switch is turned on
+            self._random_delay()  # Introduce a random delay before switching off
             self._handle_switch_toggle()
             self._reset_inactivity_timer()
 
@@ -99,22 +104,61 @@ class UselessBoxController:
                 self._handle_peekaboo()
                 self._reset_inactivity_timer()
 
-        # Check if the inactivity timeout has been reached and close the lid if necessary
+        # Close the lid if it is open and there has been no interaction for the specified inactivity period
         if time.time() - self.last_interaction_time > self.inactivity_timeout:
-            print("No interaction detected for a while. Closing the lid.")
-            self._handle_close_lid()
+            if self.state == UselessBoxController.LID_OPEN:
+                print("No interaction detected for a while. Closing the lid.")
+                self._handle_close_lid()
 
         self.last_switch_state = current_switch
         self.last_proximity = proximity
         time.sleep(0.2)  # Small delay for responsiveness
 
+    def _random_delay(self):
+        """
+        Introduces a random delay before taking action after the switch is turned on.
+        Short delays are more common, with longer delays being rarer.
+        """
+        random_value = random.uniform(0, 1)
+        if random_value < 0.3:
+            chosen_delay = 0.5
+        elif random_value < 0.6:
+            chosen_delay = 1.0
+        elif random_value < 0.8:
+            chosen_delay = 1.5
+        elif random_value < 0.9:
+            chosen_delay = 2.0
+        elif random_value < 0.95:
+            chosen_delay = 3.0
+        else:
+            chosen_delay = 5.0
+
+        print(f"Introducing a delay of {chosen_delay} seconds.")
+        time.sleep(chosen_delay)
+
     def _handle_switch_toggle(self):
         """
         Handles the switch toggle interaction.
+        Ensures the switch is actually turned off by the arm.
         """
-        print("Switch turned on, turning it off.")
+        print("Switch turned on, attempting to turn it off.")
         self.box.open_lid(100, 500)
-        self.box.switch_off(500)
+        time.sleep(0.5)  # Small delay to give a visual effect of the lid opening
+
+        # Attempt to turn off the switch
+        for attempt in range(3):
+            print(f"Attempt {attempt + 1} to switch off.")
+            self.box.switch_arm.extend(100, 500)  # Move the switch arm fully to turn the switch off
+            time.sleep(0.5)  # Hold position to ensure it engages
+            self.box.switch_arm.retract(100, 500)  # Retract the switch arm after switching off
+
+            # Recheck the switch state after attempting to turn it off
+            if not self.box.get_switch_state():
+                print("Switch successfully turned off.")
+                break
+            else:
+                print("Switch still on, retrying...")
+
         self.box.close_lid(100, 500)  # Close the lid fully
         self.led.off()  # Turn off the LED after handling the toggle
         self.state = UselessBoxController.IDLE
@@ -144,6 +188,7 @@ class UselessBoxController:
         self.box.switch_arm.extend(50, 300)  # Move arm halfway as if threatening to switch
         time.sleep(0.5)
         self.box.switch_arm.retract(50, 300)
+        self.state = UselessBoxController.LID_OPEN  # Set state to LID_OPEN
 
     def _handle_close_lid(self):
         """

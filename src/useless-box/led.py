@@ -14,16 +14,18 @@ class LED:
         Turns the LED on (actually off because of the inversion).
         """
         self.led.value(0)  # Inverted pin, 0 means on
+        if not self.state:
+            print("LED is ON (physically OFF)")
         self.state = True
-        print("LED is ON (physically OFF)")
 
     def off(self):
         """
         Turns the LED off (actually on because of the inversion).
         """
         self.led.value(1)  # Inverted pin, 1 means off
+        if self.state:
+            print("LED is OFF (physically ON)")
         self.state = False
-        print("LED is OFF (physically ON)")
 
     def toggle(self):
         """

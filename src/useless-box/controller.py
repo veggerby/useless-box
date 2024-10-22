@@ -1,9 +1,6 @@
 import random
 import time
-from arm_lid import LidArm
-from arm_switch import SwitchArm
-from proximity import ProximitySensor, ProximityState
-from switch import ToggleSwitch
+from proximity import ProximityState
 from led import LED
 from useless_box import UselessBox
 
@@ -35,6 +32,8 @@ class UselessBoxController:
         self.last_switch_state = None
         self.inactivity_timeout = inactivity_timeout  # Inactivity timeout in seconds
         self.last_interaction_time = time.time()  # Track the last time an interaction occurred
+        self.switch_toggle_count = 0
+        self.last_toggle_time = time.time()
 
     def run(self):
         """
@@ -81,8 +80,11 @@ class UselessBoxController:
                 print("Hand detected very close, but not playing peek-a-boo or threatening this time.")
 
         elif proximity == ProximityState.CLOSE and self.state == UselessBoxController.IDLE:
-            self.state = UselessBoxController.TEASING
-            self._handle_tease()
+            if random.random() < 0.3:  # 30% chance of doing a fake-out
+                self._handle_fakeout()
+            else:
+                self.state = UselessBoxController.TEASING
+                self._handle_tease()
             self._reset_inactivity_timer()
 
         elif proximity == ProximityState.FAR and self.state != UselessBoxController.IDLE:
@@ -110,6 +112,8 @@ class UselessBoxController:
                 print("No interaction detected for a while. Closing the lid.")
                 self._handle_close_lid()
 
+        self.update_led_based_on_proximity(proximity)  # Update LED pattern based on proximity
+
         self.last_switch_state = current_switch
         self.last_proximity = proximity
         time.sleep(0.2)  # Small delay for responsiveness
@@ -136,11 +140,31 @@ class UselessBoxController:
         print(f"Introducing a delay of {chosen_delay} seconds.")
         time.sleep(chosen_delay)
 
+    def update_led_based_on_proximity(self, proximity):
+        if proximity == ProximityState.VERY_CLOSE:
+            self.led.on() if time.time() % 1 < 0.5 else self.led.off()  # Blink slowly
+        elif proximity == ProximityState.CLOSE:
+            self.led.on() if time.time() % 0.2 < 0.1 else self.led.off()  # Blink quickly
+        else:
+            self.led.off()
+
     def _handle_switch_toggle(self):
         """
         Handles the switch toggle interaction.
         Ensures the switch is actually turned off by the arm.
         """
+        current_time = time.time()
+        if current_time - self.last_toggle_time < 3:
+            self.switch_toggle_count += 1
+        else:
+            self.switch_toggle_count = 1
+        self.last_toggle_time = current_time
+
+        if self.switch_toggle_count >= 3:
+            self._handle_panic_mode()
+            self.switch_toggle_count = 0
+            return
+
         print("Switch turned on, attempting to turn it off.")
         self.box.open_lid(100, 500)
         time.sleep(0.5)  # Small delay to give a visual effect of the lid opening
@@ -172,11 +196,14 @@ class UselessBoxController:
 
     def _handle_tease(self):
         """
-        Handles the teasing interaction.
+        Handles the teasing interaction with a random lid angle.
         """
-        self.box.tease()
+        random_angle = random.randint(50, 100)  # Randomly choose an angle between 50% and 100%
+        print(f"Teasing with lid opening to {random_angle}%")
+        self.box.open_lid(random_angle, 500)
+        time.sleep(0.5)
+        self.box.close_lid(0, 500)
         self.state = UselessBoxController.IDLE
-
     def _handle_threaten(self):
         """
         Handles the threatening movement of the switch arm.
@@ -198,6 +225,31 @@ class UselessBoxController:
         print("Retracting switch arm and closing lid.")
         self.box.switch_arm.retract(100, 300)  # Ensure the switch arm is fully retracted
         self.box.close_lid(100, 500)  # Fully close the lid (100%)
+        self.state = UselessBoxController.IDLE
+
+    def _handle_fakeout(self):
+        """
+        Handles a fake-out interaction where the lid opens slightly and then closes quickly.
+        """
+        print("Fake-out! Opening lid slightly...")
+        self.box.open_lid(30, 300)  # Open lid to 30% quickly
+        time.sleep(0.3)
+        print("Closing quickly!")
+        self.box.close_lid(0, 200)  # Close lid quickly
+        self.state = UselessBoxController.IDLE
+
+    def _handle_panic_mode(self):
+        """
+        Handles a panic mode where the box rapidly opens and closes the lid while blinking the LED.
+        """
+        print("Entering panic mode!")
+        for _ in range(5):
+            self.box.open_lid(100, 200)
+            self.led.toggle()
+            time.sleep(0.2)
+            self.box.close_lid(0, 200)
+            self.led.toggle()
+            time.sleep(0.2)
         self.state = UselessBoxController.IDLE
 
     def _reset_inactivity_timer(self):

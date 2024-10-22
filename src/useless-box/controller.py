@@ -14,6 +14,8 @@ class UselessBoxController:
     TEASING = 2
     SWITCH_OFF = 3
 
+    MAX_SWITCH_ON_TIME_SECS = 10
+
     def __init__(self, switch_pin, lid_pin, sda_pin, scl_pin, toggle_pin, led_pin, inactivity_timeout=5):
         """
         Initializes the UselessBoxController with the necessary components.
@@ -28,12 +30,14 @@ class UselessBoxController:
         self.box = UselessBox(switch_pin, lid_pin, sda_pin, scl_pin, toggle_pin)
         self.led = LED(led_pin)  # Initialize the onboard LED
         self.state = UselessBoxController.IDLE
+        self.last_state = None
         self.last_proximity = None
         self.last_switch_state = None
         self.inactivity_timeout = inactivity_timeout  # Inactivity timeout in seconds
         self.last_interaction_time = time.time()  # Track the last time an interaction occurred
-        self.switch_toggle_count = 0
-        self.last_toggle_time = time.time()
+        self.switch_off_count = 0
+        self.last_off_time = time.time()
+        self.last_on_time = None
 
     def run(self):
         """
@@ -57,12 +61,20 @@ class UselessBoxController:
         if current_switch != self.last_switch_state:
             print(f"Switch state: {'On' if current_switch else 'Off'}")
 
+            if current_switch:
+                self.last_on_time = time.time()
+
+        if self.state != self.last_state:
+            print(f"State: {self.state}")
+
+        self.last_state = self.state
+
         # Check for interactions and update the state
         if current_switch and not self.last_switch_state:
             self.state = UselessBoxController.SWITCH_OFF
             self.led.on()  # Turn on the LED when the switch is turned on
             self._random_delay()  # Introduce a random delay before switching off
-            self._handle_switch_toggle()
+            self._handle_switch_off()
             self._reset_inactivity_timer()
 
         elif proximity == ProximityState.VERY_CLOSE and self.state == UselessBoxController.IDLE:
@@ -106,6 +118,11 @@ class UselessBoxController:
                 self._handle_peekaboo()
                 self._reset_inactivity_timer()
 
+        # If the switch is turned on for a long time, switch off automatically
+        if current_switch and self.state == UselessBoxController.IDLE and self.last_on_time is not None and time.time() - self.last_on_time > self.MAX_SWITCH_ON_TIME_SECS:
+            print("Switch has been on for a while. Turning it off automatically.")
+            self._handle_switch_off()
+
         # Close the lid if it is open and there has been no interaction for the specified inactivity period
         if time.time() - self.last_interaction_time > self.inactivity_timeout:
             if self.state == UselessBoxController.LID_OPEN:
@@ -148,21 +165,21 @@ class UselessBoxController:
         else:
             self.led.off()
 
-    def _handle_switch_toggle(self):
+    def _handle_switch_off(self):
         """
         Handles the switch toggle interaction.
         Ensures the switch is actually turned off by the arm.
         """
         current_time = time.time()
-        if current_time - self.last_toggle_time < 3:
-            self.switch_toggle_count += 1
+        if current_time - self.last_off_time < 3:
+            self.switch_off_count += 1
         else:
-            self.switch_toggle_count = 1
-        self.last_toggle_time = current_time
+            self.switch_off_count = 1
+        self.last_off_time = current_time
 
-        if self.switch_toggle_count >= 3:
+        if self.switch_off_count >= 3:
             self._handle_panic_mode()
-            self.switch_toggle_count = 0
+            self.switch_off_count = 0
             return
 
         print("Switch turned on, attempting to turn it off.")

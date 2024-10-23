@@ -2,17 +2,17 @@
 
 The non-attributed and non-adapted work in this repository is licensed under the [MIT LIcense](https://opensource.org/license/mit).
 
-All files in [adjusted folder](./resources/adjusted/) are apapted work from @balassy 3D models on Thingiverse and are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+All files in [adjusted folder](./resources/adjusted/) are apapted work from [@balassy](https://www.thingiverse.com/thing:3856965) 3D models on Thingiverse and are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
 
 ## Attribution
 
-This concept and 3D model for the enclosure, mechanical and eletronic design is based on [useless-box](https://github.com/balassy/useless-box/) by György Balássy (@balassy),
+This concept and 3D model for the enclosure, mechanical and eletronic design is based on [useless-box](https://github.com/balassy/useless-box/) and [Smart Useless Box with ESP8266 and Gesture Sensor](https://www.thingiverse.com/thing:3856965).
 
 All source code has been created from scratch.
 
-3D Sketches available on [Thingiverse](https://www.thingiverse.com/thing:3856965), with [local copy](./resources/Smart%20Useless%20Box%20with%20ESP8266%20and%20Gesture%20Sensor%20-%203856965.zip) and extracted [here](./resources/originals/3d-print/). These files are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) attributed to @balassy.
+3D Sketches available on [Thingiverse](https://www.thingiverse.com/thing:3856965), with [local copy](./resources/Smart%20Useless%20Box%20with%20ESP8266%20and%20Gesture%20Sensor%20-%203856965.zip) and extracted [here](./resources/originals/3d-print/). These files are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) attributed to [György Balássy](https://www.thingiverse.com/balassy/designs).
 
-The included [Fritzing schematics](./resources/originals/Useless-Box-Shield-v1.fzz) are directly from the [GitHub repository](https://github.com/balassy/useless-box/blob/master/wiring/Useless-Box-Shield-v1.fzz) and licesed under [MIT LIcense](https://opensource.org/license/mit) attributed to György Balássy (@balassy).
+The included [Fritzing schematics](./resources/originals/Useless-Box-Shield-v1.fzz) are directly from the [GitHub repository](https://github.com/balassy/useless-box/blob/master/wiring/Useless-Box-Shield-v1.fzz) and licesed under [MIT LIcense](https://opensource.org/license/mit) attributed to György Balássy ([@balassy](https://github.com/balassy)).
 
 ## Firnware
 
@@ -64,7 +64,7 @@ esptool.py --chip esp32c3 --port /dev/cu.usbmodem1452201 --baud 460800 write_fla
 
 ## 3DPrinted Box
 
-The original files from @balassy has been adjusted to accomodate the slightly larger controller on a mini breadboard (with extended). Additionally the micro USB port has been adjusted size and position for the USB-C port on the used ESP-C3 Super Mini.
+The original files from [balassy](https://www.thingiverse.com/thing:3856965) has been adjusted to accomodate the slightly larger controller on a mini breadboard (with extended). Additionally the micro USB port has been adjusted size and position for the USB-C port on the used ESP-C3 Super Mini.
 
 Additionally mounts have been added to the box bottom, to allow for better mounting of the servo for the lid on the box-base, using 2 M2 screws.
 

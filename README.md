@@ -1,8 +1,18 @@
 # Useless Box
 
-This is a further development of [useless-box](https://github.com/balassy/useless-box/) by @balassy. 3D Sketches available on [Thingiverse](https://www.thingiverse.com/thing:3856965), with [local copy](./resources/Smart%20Useless%20Box%20with%20ESP8266%20and%20Gesture%20Sensor%20-%203856965.zip).
+The non-attributed and non-adapted work in this repository is licensed under the [MIT LIcense](https://opensource.org/license/mit).
 
-Fork with SCAD files [useful-box](https://github.com/JesusSave/useful-box).
+All files in [adjusted folder](./resources/adjusted/) are apapted work from @balassy 3D models on Thingiverse and are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
+
+## Attribution
+
+This concept and 3D model for the enclosure, mechanical and eletronic design is based on [useless-box](https://github.com/balassy/useless-box/) by György Balássy (@balassy),
+
+All source code has been created from scratch.
+
+3D Sketches available on [Thingiverse](https://www.thingiverse.com/thing:3856965), with [local copy](./resources/Smart%20Useless%20Box%20with%20ESP8266%20and%20Gesture%20Sensor%20-%203856965.zip) and extracted [here](./resources/originals/3d-print/). These files are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/) attributed to @balassy.
+
+The included [Fritzing schematics](./resources/originals/Useless-Box-Shield-v1.fzz) are directly from the [GitHub repository](https://github.com/balassy/useless-box/blob/master/wiring/Useless-Box-Shield-v1.fzz) and licesed under [MIT LIcense](https://opensource.org/license/mit) attributed to György Balássy (@balassy).
 
 ## Firnware
 
@@ -10,9 +20,18 @@ Using [ESP32-C3 Super Mini](https://ardustore.dk/produkt/esp32-c3-super-mini-wif
 
 [Datasheet](./resources/ESP32C3%20Datasheet.PDF) from [ardustore.dk](https://ardustore.dk/error/ESP32C3%20Datasheet.PDF)
 
-Pinout ![ESP32-C3 Super Mini](./resources/esp32-c3-super-mini-pinout.jpeg) from [arduinio.cc](https://forum.arduino.cc/t/esp32-c3-supermini-pinout/1189850).
+Pinout ![ESP32-C3 Super Mini](./resources/esp32-c3-super-mini-pinout.jpeg) from [arduinio.cc](https://forum.arduino.cc/t/esp32-c3-supermini-pinout/1189850)
 
-[Generic ESP32-C3 firmare](https://micropython.org/download/ESP32_GENERIC_C3/).
+See [ESP32-C3 Super Mini](https://www.sudo.is/docs/esphome/boards/esp32c3supermini/) on sudo.is.
+
+[Generic ESP32-C3 firmware](https://micropython.org/download/ESP32_GENERIC_C3/).
+
+Included parts for the Fritzing schematics:
+
+* [ESP32-C3 Super Mini](./resources/esp32-c3-super-mini-tht.fzpz) (from [Fritzing Forum](https://forum.fritzing.org/t/need-esp32-c3-super-mini-board-model/20561) - [direct link](https://forum.fritzing.org/uploads/short-url/oE2T2GupmkPLZawp5EHPnzf3vFM.fzpz))
+* [SG90](./resources/Tower%20Pro%20SG90%20servo.fzpz) which is compatible with the MG90S used in this design (from [SolderedElectronics/e-radionica.com-Fritzing-Library-parts-](https://github.com/SolderedElectronics/e-radionica.com-Fritzing-Library-parts-/tree/master) GitHub repo - [direct link](https://github.com/SolderedElectronics/e-radionica.com-Fritzing-Library-parts-/blob/master/Tower%20Pro%20SG90%20servo.fzpz))
+* [APDS-9960](./resources/12787_sfe_apds_9960_rgb_and_gesture_sensor.fzpz) (from [sparkfun/Fritzing_Parts](https://github.com/sparkfun/Fritzing_Parts/tree/main/products) GitHub repo - [direct link](https://github.com/sparkfun/Fritzing_Parts/blob/main/products/12787_sfe_apds_9960_rgb_and_gesture_sensor.fzpz))
+* [2 Pin Toggle Switch](./resources/Toggle%20Switch%20spst.fzpz) (from [Fritzing Forum](https://forum.fritzing.org/t/special-type-of-spst-part/6125) - [direct link](https://forum.fritzing.org/uploads/default/original/2X/1/1c25cedde9474dec93b1165daffaadfd2b2697d7.fzpz))
 
 ### Flash
 
@@ -37,12 +56,21 @@ esptool.py --chip esp32c3 --port /dev/cu.usbmodem1452201 --baud 460800 write_fla
 
 * 1 mini breadboard
 * 1 x [ESP32-C3 Super Mini](https://ardustore.dk/produkt/esp32-c3-super-mini-wifi-4mb-ble5-udviklingsboard)
-* 2 x [MG90S](https://www.amazon.de/dp/B095YVLLFQ)
+* 2 x [MG90S](https://www.amazon.de/dp/B095YVLLFQ) this is compatible with the original SG90, but is more robust (metal gears) and quieter
 * 1 x [APDS-9960](https://www.amazon.de/dp/B01HV41XJO) ([library](https://github.com/liske/python-apds9960))
 * 1 x [2 Pin Mini On/Off Toggle Switch](https://www.amazon.de/dp/B07MS8X99G)
-* 1 x 1 kΩ resistor (Brown-Black-Red-Gold)
+* 1 x 1 kΩ resistor (color code Brown-Black-Red-Gold for reference)
+* Various M2 and M3 screws, nuts and washers
 
-## UselessBoxController Behavior Overview
+## 3DPrinted Box
+
+The original files from @balassy has been adjusted to accomodate the slightly larger controller on a mini breadboard (with extended). Additionally the micro USB port has been adjusted size and position for the USB-C port on the used ESP-C3 Super Mini.
+
+Additionally mounts have been added to the box bottom, to allow for better mounting of the servo for the lid on the box-base, using 2 M2 screws.
+
+## Useless-Box Behavior Overview
+
+This version of the useless-box has a controller which manages the behavior/response of the useless-box to stimuli/input. The implemented behaviors are:
 
 ### 1. Initial Setup and Idle State
 
@@ -119,3 +147,7 @@ esptool.py --chip esp32c3 --port /dev/cu.usbmodem1452201 --baud 460800 write_fla
 * The `UselessBoxController` reacts dynamically based on the proximity of a hand and the toggle switch state. It performs quirky behaviors like teasing, fake-outs, peek-a-boo, threatening gestures, and panic mode to entertain and surprise users.
 * The randomness introduced (through probabilities and delays) ensures that the box feels unpredictable and playful, making interactions more engaging.
 * The box also incorporates safety measures, such as ensuring the lid stays closed when the hand is too close and resetting states after inactivity, providing a consistent user experience.
+
+## Additional Works
+
+* [Useless Box PRO with ESP8266 and Gesture Sensor](https://www.thingiverse.com/thing:5787968) remix from original
